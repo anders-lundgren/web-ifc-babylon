@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "noResolve": false,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "preserveConstEnums":true,
+    "lib": [
+        "dom",
+        "es6"
+    ],
+    "rootDir": "src",
+    "types": [
+      "babylonjs",
+      "babylonjs-gui",
+    ]                                 /* Type declaration files to be included in compilation. */
+  }
+}

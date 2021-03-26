@@ -1,0 +1,39 @@
+{
+  "name": "web-ifc-babylon",
+  "version": "1.0.0",
+  "description": "Starter project using web-ifc and Babylon.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "cp node_modules/web-ifc/web-ifc.wasm public/web-ifc.wasm&webpack",
+    "start": "webpack serve --port 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anders-lundgren/web-ifc-babylon"
+  },
+  "author": "",
+  "license": "MPL 2.0",
+  "bugs": {
+    "url": "https://github.com/anders-lundgren/web-ifc-babylon/issues"
+  },
+  "homepage": "https://github.com/anders-lundgren/web-ifc-babylon#README",
+  "devDependencies": {
+    "@babylonjs/core": "^4.2.0",
+    "@babylonjs/inspector": "^4.2.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "html-webpack-plugin": "^5.3.1",
+    "ts-loader": "^8.0.18",
+    "typescript": "^4.2.3",
+    "webpack": "^5.28.0",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "babylonjs": "^4.2.0",
+    "babylonjs-gui": "^4.2.0",
+    "fs": "0.0.1-security",
+    "raw-loader": "^4.0.2",
+    "source-map-loader": "^2.0.1",
+    "web-ifc": "0.0.17"
+  }
+}
