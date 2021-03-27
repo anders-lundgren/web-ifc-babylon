@@ -123,10 +123,11 @@ export class IfcLoader {
     getMeshMaterial(color, scene) {
         var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
 
-        myMaterial.diffuseColor = new BABYLON.Color3(color.x, color.y, color.z);
-        myMaterial.alpha = color.w;
+        myMaterial.emissiveColor = new BABYLON.Color3(color.x, color.y, color.z);
+        myMaterial.alpha = (color.w<1.0?0:1);
         myMaterial.sideOrientation = BABYLON.Mesh.DOUBLESIDE;
         myMaterial.backFaceCulling = false;
+        myMaterial.disableLighting = true;
 
         return myMaterial;
     }

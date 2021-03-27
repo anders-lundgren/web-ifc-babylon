@@ -34,12 +34,13 @@ class App {
             camera.keysRight.push(68);
             camera.keysLeft.push(65);
 
-            // Create a light and aim it vertically to the sky (0, 1, 0).
-            let light = new BABYLON.HemisphericLight('light-1', new BABYLON.Vector3(0, 1, 0), scene);
-            let downlight = new BABYLON.HemisphericLight('light-2', new BABYLON.Vector3(0, -1, 0), scene);
-            // Set light intensity to a lower value (default is 1).
-            light.intensity = 0.9;
-            downlight.intensity = 0.8;
+            // // Create a light and aim it vertically to the sky (0, 1, 0).
+            // let light = new BABYLON.HemisphericLight('light-1', new BABYLON.Vector3(0, 1, 0), scene);
+            // // Create another light and aim it vertically to the ground (0, -1, 0).
+            // let downlight = new BABYLON.HemisphericLight('light-2', new BABYLON.Vector3(0, -1, 0), scene);
+            // // Set light intensity to a lower value (default is 1).
+            // light.intensity = 0.9;
+            // downlight.intensity = 0.8;
 
             // Return the created scene
             return scene;
@@ -67,9 +68,12 @@ class App {
             BABYLON.Tools.ClearLogCache()
         }, null, null);
 
+        let divFps = document.getElementById("fps");
+
         // run the render loop
         engine.runRenderLoop(function () {
             scene.render();
+            divFps.innerHTML = engine.getFps().toFixed() + " fps";
         });
 
         // Initialize IFC loader
