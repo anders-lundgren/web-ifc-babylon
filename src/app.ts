@@ -1,4 +1,5 @@
 import * as BABYLON from "@babylonjs/core";
+import * as GUI from "@babylonjs/gui";
 import "@babylonjs/loaders/glTF";
 import * as IFCLOADER from "./IfcLoader";
 import sampleIfc from './test.ifc';
@@ -68,12 +69,34 @@ class App {
             BABYLON.Tools.ClearLogCache()
         }, null, null);
 
-        let divFps = document.getElementById("fps");
+        // let divFps = document.getElementById("fps");
+        // GUI
+        var plane = BABYLON.MeshBuilder.CreatePlane("plane", {size: 2});
+        plane.position.z = -1;
+        plane.position.y = 2;
+        plane.position.x = 2;
+
+        var advancedTexture = GUI.AdvancedDynamicTexture.CreateForMesh(plane);
+
+        var text1 = new GUI.TextBlock;
+        text1.width = 1;
+        text1.height = 0.4;
+        text1.color = "white";
+        text1.fontSize = 120;
+        text1.fontWeight = "bold";
+        text1.text = "0 fps";
+        // text1.transformCenterX = 10;
+        // text1.horizontalAlignment = 10;
+        // text1.verticalAlignment= -100;
+        // text1._moveToProjectedPosition(new BABYLON.Vector3(0,1,1));
+        advancedTexture.addControl(text1);
+        // text1.linkOffsetY = 1;
 
         // run the render loop
         engine.runRenderLoop(function () {
             scene.render();
-            divFps.innerHTML = engine.getFps().toFixed() + " fps";
+            // divFps.innerHTML = engine.getFps().toFixed() + " fps";
+            text1.text = engine.getFps().toFixed() + " fps";
         });
 
         // Initialize IFC loader
