@@ -114,7 +114,7 @@ class App {
                 catch {
                     //
                 }
-                this.mesh = ifc.load(name, buf, scene).then(() => {
+                this.mesh = ifc.load(name, buf, scene, true).then(() => {
                     console.log("Done processing file: " + name);
                 }
                 );
@@ -129,7 +129,7 @@ class App {
             engine.resize();
         });
         var buffer:string = sampleIfc;
-        this.mesh = await ifc.load("Sample model", buffer, scene);
+        this.mesh = await ifc.load("Sample model", buffer, scene, true);
     }
 }
 var app = new App();

@@ -17,28 +17,19 @@ export class IfcLoader {
         await this.ifcAPI.Init();
     }
 
-    async load(name, file, scene) {
+    async load(name, file, scene, mergematerials) {
         var scope = this;
 
         await this.ifcAPI.Init();
 
-        return this.parse(name, file, scene);
-    }
-
-    async parse(url, buffer, scene) {
         var mToggle_YZ = [
             1, 0, 0, 0,
             0, -1, 0, 0,
             0, 0, -1, 0,
             0, 0, 0, -1];
 
-        var modelID = await this.ifcAPI.OpenModel(url, buffer);
+        var modelID = await this.ifcAPI.OpenModel(name, file);
         await this.ifcAPI.SetGeometryTransformation(modelID, mToggle_YZ);
-        var result = this.loadAllGeometry(modelID, scene);
-        return result;
-    }
-
-    async loadAllGeometry(modelID, scene) {
         var flatMeshes = this.getFlatMeshes(modelID);
 
         var mainObject = new BABYLON.Mesh("custom", scene);
@@ -46,19 +37,12 @@ export class IfcLoader {
         for (var i = 0; i < flatMeshes.size(); i++) {
             var placedGeometries = flatMeshes.get(i).geometries;
             for (var j = 0; j < placedGeometries.size(); j++) {
-                const mesh = this.getPlacedGeometry(modelID, placedGeometries.get(j), scene, mainObject)
-                // if (mesh != null) {
-                //     mesh.name = flatMeshes.get(i).expressID.toString();
-                //     mesh.parent = mainObject;
-                // }
+                const mesh = this.getPlacedGeometry(modelID, placedGeometries.get(j), scene, mainObject, mergematerials)
             }
         }
 
         console.log("Materials: " + this.meshmaterials.size);
         console.log("Meshes: " + mainObject.getChildren().length);
-        // mainObject.getChildren().forEach(element => {
-        //     console.log(element.name);
-        // });
         
         return mainObject;
     }
@@ -68,7 +52,7 @@ export class IfcLoader {
         return flatMeshes;
     }
 
-    getPlacedGeometry(modelID, placedGeometry, scene, mainObject) {
+    getPlacedGeometry(modelID, placedGeometry, scene, mainObject, mergematerials) {
         var meshgeometry = this.getBufferGeometry(modelID, placedGeometry, scene);
         if (meshgeometry != null) {
             var material = this.getMeshMaterial(placedGeometry.color, scene);
@@ -91,7 +75,7 @@ export class IfcLoader {
             let color = placedGeometry.color;
             let colorid:number = (color.x+(color.y)*256+(color.z)*256**2+(color.w)*256**3).toFixed(0);
 
-            if (this.meshmaterials.has(colorid)) {
+            if (mergematerials && this.meshmaterials.has(colorid)) {
                 var tempmesh: BABYLON.Mesh = this.meshmaterials.get(colorid);
                 // console.log("Adding new mesh " + meshgeometry.name + " to mesh: " + tempmesh.name);
                 meshgeometry.material = tempmesh.material;
@@ -102,7 +86,6 @@ export class IfcLoader {
 
             }
             else {
-                console.log("Adding material with id: " + colorid.toString(16));
                 var newMaterial = this.getMeshMaterial(color, scene)
                 meshgeometry.material = newMaterial;
 
