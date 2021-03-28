@@ -35,13 +35,16 @@ class App {
             camera.keysRight.push(68);
             camera.keysLeft.push(65);
 
-            // // Create a light and aim it vertically to the sky (0, 1, 0).
-            // let light = new BABYLON.HemisphericLight('light-1', new BABYLON.Vector3(0, 1, 0), scene);
-            // // Create another light and aim it vertically to the ground (0, -1, 0).
-            // let downlight = new BABYLON.HemisphericLight('light-2', new BABYLON.Vector3(0, -1, 0), scene);
-            // // Set light intensity to a lower value (default is 1).
-            // light.intensity = 0.9;
-            // downlight.intensity = 0.8;
+            /* Uncomment below to add lighting - currently using materials with emission for performance
+            
+            // Create a light and aim it vertically to the sky (0, 1, 0).
+            let light = new BABYLON.HemisphericLight('light-1', new BABYLON.Vector3(0, 1, 0), scene);
+            // Create another light and aim it vertically to the ground (0, -1, 0).
+            let downlight = new BABYLON.HemisphericLight('light-2', new BABYLON.Vector3(0, -1, 0), scene);
+            // Set light intensity to a lower value (default is 1).
+            light.intensity = 0.9;
+            downlight.intensity = 0.8;
+            */
 
             // Return the created scene
             return scene;
@@ -57,7 +60,7 @@ class App {
         // here we add XR support
         if (env != null) {
             const xrHelper = scene.createDefaultXRExperienceAsync({
-                // floorMeshes: [<BABYLON.AbstractMesh>env.ground],
+                floorMeshes: [<BABYLON.AbstractMesh>env.ground],
                 disableDefaultUI: false
             })
         }
@@ -69,15 +72,14 @@ class App {
             BABYLON.Tools.ClearLogCache()
         }, null, null);
 
-        // let divFps = document.getElementById("fps");
         // GUI
         var plane = BABYLON.MeshBuilder.CreatePlane("plane", {size: 2});
         plane.position.z = -1;
         plane.position.y = 2;
         plane.position.x = 2;
 
+        // Add fps text
         var advancedTexture = GUI.AdvancedDynamicTexture.CreateForMesh(plane);
-
         var text1 = new GUI.TextBlock;
         text1.width = 1;
         text1.height = 0.4;
@@ -85,23 +87,17 @@ class App {
         text1.fontSize = 120;
         text1.fontWeight = "bold";
         text1.text = "0 fps";
-        // text1.transformCenterX = 10;
-        // text1.horizontalAlignment = 10;
-        // text1.verticalAlignment= -100;
-        // text1._moveToProjectedPosition(new BABYLON.Vector3(0,1,1));
         advancedTexture.addControl(text1);
-        // text1.linkOffsetY = 1;
-
-        // run the render loop
-        engine.runRenderLoop(function () {
-            scene.render();
-            // divFps.innerHTML = engine.getFps().toFixed() + " fps";
-            text1.text = engine.getFps().toFixed() + " fps";
-        });
 
         // Initialize IFC loader
         var ifc = new IFCLOADER.IfcLoader();
         await ifc.initialize();
+
+        // run the render loop
+        engine.runRenderLoop(function () {
+            text1.text = engine.getFps().toFixed() + " fps" 
+            scene.render();
+        });
 
         // Set up drag and drop for loading files
         filesInput.onProcessFileCallback = (file: File, name, extension) => {

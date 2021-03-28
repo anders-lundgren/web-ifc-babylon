@@ -2,7 +2,6 @@ import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import * as WEBIFC from "web-ifc/web-ifc-api"
 import { IndicesArray } from "babylonjs/types";
-import { Matrix } from "babylonjs/Maths/math.vector";
 
 export class IfcLoader {
     constructor() {
@@ -11,16 +10,11 @@ export class IfcLoader {
 
     private ifcAPI = new WEBIFC.IfcAPI();
 
-    private meshmaterials: Map<number, BABYLON.Mesh>;
-    public loadedmeshes: number;
-
     async initialize() {
         await this.ifcAPI.Init();
     }
 
     async load(name, file, scene, mergematerials) {
-
-        this.meshmaterials = new Map <number, BABYLON.Mesh>();
 
         var mToggle_YZ = [
             1, 0, 0, 0,
@@ -36,19 +30,26 @@ export class IfcLoader {
         scene.useGeometryIdsMap = true;
         scene.useMaterialMeshMap = true;
         
+        var nodecount = 0;
+        var currentnode = 0;
         var mainObject = new BABYLON.Mesh("custom", scene);
+        var meshnode;
+
+        var meshmaterials = new Map <number, BABYLON.Mesh>();
 
         for (var i = 0; i < flatMeshes.size(); i++) {
             var placedGeometries = flatMeshes.get(i).geometries;
+            if (nodecount++%100 == 0) {
+                currentnode ++;
+                meshnode = new BABYLON.TransformNode ("node" + currentnode, scene);
+                meshnode.parent = mainObject;
+                meshmaterials = new Map <number, BABYLON.Mesh>();
+            }
             for (var j = 0; j < placedGeometries.size(); j++) {
-                const mesh = this.getPlacedGeometry(modelID, placedGeometries.get(j), scene, mainObject, mergematerials)
+                this.getPlacedGeometry(modelID, placedGeometries.get(j), scene, meshnode, meshmaterials, mergematerials)
             }
         }
 
-        console.log("Materials: " + this.meshmaterials.size);
-        console.log("Meshes: " + mainObject.getChildren().length);
-        // scene.blockMaterialDirtyMechanism = false;
-        
         return mainObject;
     }
 
@@ -57,7 +58,7 @@ export class IfcLoader {
         return flatMeshes;
     }
 
-    getPlacedGeometry(modelID, placedGeometry, scene, mainObject, mergematerials) {
+    async getPlacedGeometry(modelID, placedGeometry, scene, mainObject, meshmaterials, mergematerials) {
         var meshgeometry = this.getBufferGeometry(modelID, placedGeometry, scene);
         if (meshgeometry != null) {
             var m = placedGeometry.flatTransformation;
@@ -79,22 +80,17 @@ export class IfcLoader {
             let color = placedGeometry.color;
             let colorid:number = Math.floor(color.x*256)+Math.floor(color.y*256**2)+Math.floor(color.z*256**3)+Math.floor(color.w*256**4);
 
-            if (mergematerials && this.meshmaterials.has(colorid)) {
-                var tempmesh: BABYLON.Mesh = this.meshmaterials.get(colorid);
-                console.log("Adding new mesh: " + tempmesh.name);
+            if (mergematerials && meshmaterials.has(colorid)) {
+                var tempmesh: BABYLON.Mesh = meshmaterials.get(colorid);
 
                 meshgeometry.material = tempmesh.material;
                 var mergedmesh = BABYLON.Mesh.MergeMeshes([tempmesh, meshgeometry], true, true);
-                // if (mergedmesh == null) {
-                //     // Large mesh, allow 32 bit indices
-                //     var mergedmesh = BABYLON.Mesh.MergeMeshes([tempmesh, meshgeometry], true, true);
-                // }
                 mergedmesh.name = colorid.toString(16);
 
                 mergedmesh.material.freeze();
                 mergedmesh.freezeWorldMatrix();
 
-                this.meshmaterials.set(colorid, mergedmesh);
+                meshmaterials.set(colorid, mergedmesh);
                 mergedmesh.parent = mainObject;
 
             }
@@ -105,8 +101,7 @@ export class IfcLoader {
                 meshgeometry.material.freeze();
                 meshgeometry.freezeWorldMatrix();
 
-                console.log("Adding new mesh material " + colorid.toString(16));
-                this.meshmaterials.set(colorid, meshgeometry);
+                meshmaterials.set(colorid, meshgeometry);
                 meshgeometry.parent = mainObject;
             }        
 
@@ -135,12 +130,12 @@ export class IfcLoader {
         var positions = new Array(Math.floor(vertices.length / 2));
         var normals = new Array(Math.floor(vertices.length / 2));
         for (var i = 0; i < vertices.length / 6; i++) {
-            positions[i * 3 + 0] = vertices[i * 6 + 0] //* 0.001;            
-            positions[i * 3 + 1] = vertices[i * 6 + 1] //* 0.001;            
-            positions[i * 3 + 2] = vertices[i * 6 + 2] //* 0.001;            
-            normals[i * 3 + 0] = vertices[i * 6 + 3] //* 0.001;            
-            normals[i * 3 + 1] = vertices[i * 6 + 4] //* 0.001;            
-            normals[i * 3 + 2] = vertices[i * 6 + 5] //* 0.001;            
+            positions[i * 3 + 0] = vertices[i * 6 + 0];            
+            positions[i * 3 + 1] = vertices[i * 6 + 1];            
+            positions[i * 3 + 2] = vertices[i * 6 + 2];            
+            normals[i * 3 + 0] = vertices[i * 6 + 3];            
+            normals[i * 3 + 1] = vertices[i * 6 + 4];            
+            normals[i * 3 + 2] = vertices[i * 6 + 5];            
         }
         var vertexData = new BABYLON.VertexData();
         vertexData.positions = positions;
