@@ -2,6 +2,7 @@ import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import * as WEBIFC from "web-ifc/web-ifc-api"
 import { IndicesArray } from "babylonjs/types";
+import { Matrix } from "babylonjs/Maths/math.vector";
 
 export class IfcLoader {
     constructor() {
@@ -9,6 +10,8 @@ export class IfcLoader {
     }
 
     private ifcAPI = new WEBIFC.IfcAPI();
+
+    private meshmaterials: Map<number, BABYLON.Mesh> = new Map <number, BABYLON.Mesh>();
 
     async initialize() {
         await this.ifcAPI.Init();
@@ -39,16 +42,24 @@ export class IfcLoader {
         var flatMeshes = this.getFlatMeshes(modelID);
 
         var mainObject = new BABYLON.Mesh("custom", scene);
+
         for (var i = 0; i < flatMeshes.size(); i++) {
             var placedGeometries = flatMeshes.get(i).geometries;
             for (var j = 0; j < placedGeometries.size(); j++) {
                 const mesh = this.getPlacedGeometry(modelID, placedGeometries.get(j), scene, mainObject)
-                if (mesh != null) {
-                    mesh.name = flatMeshes.get(i).expressID.toString();
-                    mesh.parent = mainObject;
-                }
+                // if (mesh != null) {
+                //     mesh.name = flatMeshes.get(i).expressID.toString();
+                //     mesh.parent = mainObject;
+                // }
             }
         }
+
+        console.log("Materials: " + this.meshmaterials.size);
+        console.log("Meshes: " + mainObject.getChildren().length);
+        // mainObject.getChildren().forEach(element => {
+        //     console.log(element.name);
+        // });
+        
         return mainObject;
     }
 
@@ -77,8 +88,27 @@ export class IfcLoader {
                 console.warn("Unable to bake transform matrix into vertex array. Some elements may be in the wrong position.");
             }
 
-            meshgeometry.parent = mainObject;
-            meshgeometry.material = material;
+            let color = placedGeometry.color;
+            let colorid:number = (color.x+(color.y)*256+(color.z)*256**2+(color.w)*256**3).toFixed(0);
+
+            if (this.meshmaterials.has(colorid)) {
+                var tempmesh: BABYLON.Mesh = this.meshmaterials.get(colorid);
+                // console.log("Adding new mesh " + meshgeometry.name + " to mesh: " + tempmesh.name);
+                meshgeometry.material = tempmesh.material;
+                var mergedmesh = BABYLON.Mesh.MergeMeshes([tempmesh, meshgeometry]);
+                mergedmesh.name = colorid.toString(16);
+                this.meshmaterials.set(colorid, mergedmesh);
+                mergedmesh.parent = mainObject;
+
+            }
+            else {
+                console.log("Adding material with id: " + colorid.toString(16));
+                var newMaterial = this.getMeshMaterial(color, scene)
+                meshgeometry.material = newMaterial;
+
+                this.meshmaterials.set(colorid, meshgeometry);
+                meshgeometry.parent = mainObject;
+            }        
 
             return meshgeometry;
         }
@@ -94,7 +124,7 @@ export class IfcLoader {
             var mesh = new BABYLON.Mesh("custom", scene);
 
             var vertexData = this.getVertexData(vertices, indices);
-            vertexData.applyToMesh(mesh, true);
+            vertexData.applyToMesh(mesh, false);
 
             return mesh;
         }
@@ -124,10 +154,11 @@ export class IfcLoader {
         var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
 
         myMaterial.emissiveColor = new BABYLON.Color3(color.x, color.y, color.z);
+        // if material has alpha - make it fully transparent for performance
         myMaterial.alpha = (color.w<1.0?0:1);
         myMaterial.sideOrientation = BABYLON.Mesh.DOUBLESIDE;
         myMaterial.backFaceCulling = false;
-        myMaterial.disableLighting = true;
+        myMaterial.disableLighting = true;    
 
         return myMaterial;
     }
