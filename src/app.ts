@@ -101,7 +101,7 @@ class App {
 
         // Initialize IFC loader
         var ifc = new IFCLOADER.IfcLoader();
-        ifc.initialize();
+        await ifc.initialize();
 
         // Set up drag and drop for loading files
         filesInput.onProcessFileCallback = (file: File, name, extension) => {

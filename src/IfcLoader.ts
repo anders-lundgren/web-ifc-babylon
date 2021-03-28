@@ -11,7 +11,7 @@ export class IfcLoader {
 
     private ifcAPI = new WEBIFC.IfcAPI();
 
-    private meshmaterials: Map<number, BABYLON.Mesh> = new Map <number, BABYLON.Mesh>();
+    private meshmaterials: Map<number, BABYLON.Mesh>;
 
     async initialize() {
         await this.ifcAPI.Init();
@@ -20,7 +20,7 @@ export class IfcLoader {
     async load(name, file, scene, mergematerials) {
         var scope = this;
 
-        await this.ifcAPI.Init();
+        this.meshmaterials = new Map <number, BABYLON.Mesh>();
 
         var mToggle_YZ = [
             1, 0, 0, 0,
